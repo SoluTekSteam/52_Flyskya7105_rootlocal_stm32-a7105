@@ -1,11 +1,20 @@
+#pragma once
 #ifndef A7105_H
 #define A7105_H
 
-#define _WRITE(a)    ((a) & ~0x40)
-#define _READ(a)     ((a) | 0x40)
+#include <stdint.h>
+#include "a7105_spi.h"
+
+//Bit operations
+#define A7105_WRITE(a)    ((a) & ~0x40)
+#define A7105_READ(a)     ((a) | 0x40)
+#define A7105_SET_BIT(byte, bit) ((byte) |= ((1) << (bit)))
+#define A7105_CLEAR_BIT(byte, bit) ((byte) &= ~((1) << (bit)))
+#define A7105_TOGGLE_BIT(byte, bit) ((byte) ^= ((1) << (bit)))
+#define A7105_TEST_BIT(byte, bit) (((byte) >> (bit)) & (1))    //returns 1 or 0
 
 /**
- * TXRX state
+ * TX/RX state
  */
 enum TXRX_State {
     TXRX_OFF,
@@ -17,16 +26,17 @@ enum TXRX_State {
 /**
  * A7105 states for strobe
  */
-enum A7105_State {
-    A7105_SLEEP = 0x80,
-    A7105_IDLE = 0x90,
-    A7105_STANDBY = 0xA0,
-    A7105_PLL = 0xB0,
-    A7105_RX = 0xC0,
-    A7105_TX = 0xD0,
-    A7105_RST_WRPTR = 0xE0,
-    A7105_RST_RDPTR = 0xF0,
+enum A7105_Strobe {
+    A7105_STROBE_SLEEP = 0x80,
+    A7105_STROBE_IDLE = 0x90,
+    A7105_STROBE_STANDBY = 0xA0,
+    A7105_STROBE_PLL = 0xB0,
+    A7105_STROBE_RX = 0xC0,
+    A7105_STROBE_TX = 0xD0,
+    A7105_STROBE_RST_WRPTR = 0xE0,
+    A7105_STROBE_RST_RDPTR = 0xF0,
 };
+
 
 /**
  * Register addresses
@@ -35,8 +45,8 @@ enum {
     A7105_00_MODE = 0x00,
     A7105_01_MODE_CONTROL = 0x01,
     A7105_02_CALC = 0x02,
-    A7105_03_FIFOI = 0x03,
-    A7105_04_FIFOII = 0x04,
+    A7105_03_FIFO_I = 0x03,
+    A7105_04_FIFO_II = 0x04,
     A7105_05_FIFO_DATA = 0x05,
     A7105_06_ID_DATA = 0x06,
     A7105_07_RC_OSC_I = 0x07,
@@ -84,6 +94,7 @@ enum {
     A7105_31_RSCALE = 0x31,
     A7105_32_FILTER_TEST = 0x32,
 };
+
 #define A7105_0F_CHANNEL A7105_0F_PLL_I
 
 enum A7105_MASK {
@@ -91,6 +102,29 @@ enum A7105_MASK {
     A7105_MASK_VBCF = 1 << 3,
 };
 
+
+/**
+ * Resets the A7105, putting it into standby mode.
+ */
+void A7105Reset(void);
+
+/**
+ * A7105_calib: Perform 3 calibrations as in chapter 15 of datasheet.
+ *              Should be performed when everything is set up (to the point
+ *              that a channel is selected).
+ * Returns:
+ *  0       on success
+ *  The ored combination of the following values:
+ *    0x01  if VCO bank calibration took more than 1000us
+ *    0x02  if VCO bank calibration was not successful
+ *    0x04  if VCO current calibration took more than 1000us
+ *    0x08  if VCO current calibration was not successful
+ *    0x10  if IF filter bank calibration took more than 1000us
+ *    0x20  if IF filter bank calibration was not successful
+ */
+uint8_t A7105Calib(void);
+
+void A7105Init(void);
 
 /**
 * Writes a value to the given register
@@ -114,7 +148,7 @@ uint8_t readRegister(uint8_t regAddr);
  *
  * @param state Strobe command state
  */
-uint8_t strobe(enum A7105_State state);
+uint8_t strobe(enum A7105_Strobe state);
 
 /**
  * Send a packet of data to the A7105
@@ -153,11 +187,6 @@ void setPower(int32_t power);
  * @aparam mode TxRx mode
  */
 void setTxRxMode(enum TXRX_State mode);
-
-/**
- * Resets the A7105, putting it into standby mode.
- */
-int8_t reset();
 
 
 #endif //A7105_H
