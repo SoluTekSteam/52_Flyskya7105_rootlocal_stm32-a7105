@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include "a7105_spi.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //Bit operations
 #define A7105_WRITE(a)    ((a) & ~0x40)
 #define A7105_READ(a)     ((a) | 0x40)
@@ -109,18 +113,16 @@ enum A7105_MASK {
 void A7105Reset(void);
 
 /**
- * A7105_calib: Perform 3 calibrations as in chapter 15 of datasheet.
- *              Should be performed when everything is set up (to the point
+ * @brief Perform 3 calibrations as in chapter 15 of datasheet.
+ * @details     Should be performed when everything is set up (to the point
  *              that a channel is selected).
- * Returns:
- *  0       on success
- *  The ored combination of the following values:
- *    0x01  if VCO bank calibration took more than 1000us
- *    0x02  if VCO bank calibration was not successful
- *    0x04  if VCO current calibration took more than 1000us
- *    0x08  if VCO current calibration was not successful
- *    0x10  if IF filter bank calibration took more than 1000us
- *    0x20  if IF filter bank calibration was not successful
+ * @return 0 on success The ored combination of the following values:
+ *    - 0x01  if VCO bank calibration took more than 1000us
+ *    - 0x02  if VCO bank calibration was not successful
+ *    - 0x04  if VCO current calibration took more than 1000us
+ *    - 0x08  if VCO current calibration was not successful
+ *    - 0x10  if IF filter bank calibration took more than 1000us
+ *    - 0x20  if IF filter bank calibration was not successful
  */
 uint8_t A7105Calib(void);
 
@@ -136,7 +138,7 @@ void A7105Init(void);
 uint8_t writeRegister(uint8_t regAddr, uint8_t value);
 
 /**
-* Reads a value from the given register
+* @brief Reads a value from the given register
 *
 * @param regAddr Address of the register to read
 * @return The value of the register
@@ -144,14 +146,14 @@ uint8_t writeRegister(uint8_t regAddr, uint8_t value);
 uint8_t readRegister(uint8_t regAddr);
 
 /**
- * Sends a strobe command to the A7105
+ * @brief Sends a strobe command to the A7105
  *
  * @param state Strobe command state
  */
 uint8_t strobe(enum A7105_Strobe state);
 
 /**
- * Send a packet of data to the A7105
+ * @brief Send a packet of data to the A7105
  *
  * @param data Byte array to send
  * @param len Length of the byte array
@@ -160,7 +162,7 @@ uint8_t strobe(enum A7105_Strobe state);
 void writeData(uint8_t *data, size_t len, uint8_t channel);
 
 /**
- * Read a packet of date from the A7105
+ * @brief Read a packet of date from the A7105
  *
  * @param buffer Byte array to hold the incoming data
  * @param len Length of the buffer, number of bytes to read in
@@ -168,25 +170,36 @@ void writeData(uint8_t *data, size_t len, uint8_t channel);
 void readData(uint8_t *buffer, size_t len);
 
 /**
- * Set the A7105's ID
+ * @brief Set the A7105's ID
  *
  * @param id 32-bit identifier
  */
 void setId(uint32_t id);
 
 /**
- * Set the TX power
+ * @brief A7105 supports programmable TX power from –20dBm ~1dBm by TX test register (28h).
+ * @details User can configures PAC[1:0] and TBG[2:0] for different TX power level.
+ *          The following tables show the typical TX power vs.
+ *          current in different settings.
  *
- * @param power Output power in dBm
+ * | Address | Bit7   | Bit6   | Bit5   | Bit4   | Bit3   | Bit2   | Bit1   | Bit0   |
+ * | :----:  | :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
+ * | 28h     | -      | -      | TXCS   | PAC1   | PAC0   | TBG2   | TBG1   | TBG0   |
+ *
+ * @param PAC_reg PAC[1:0] Register
+ * @param TBG_reg TBG[2:0] Register
  */
-void setPower(int32_t power);
+void setPower(uint8_t PAC_reg, uint8_t TBG_reg);
 
 /**
- * Sets the TxRx mode
+ * @brief Sets the TxRx mode
  *
  * @aparam mode TxRx mode
  */
 void setTxRxMode(enum TXRX_State mode);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif //A7105_H

@@ -29,8 +29,8 @@ void a7105SpiRegWrite8(uint8_t data) {
 
 void a7105SpiRegWrite16(uint8_t address, uint8_t data) {
 
-    // Address byte[7]: Control registers (0) or strobe command(1)
-    // Address byte[6]: Write to (0) or read from (1) control register
+    /// Address byte[7]: Control registers (0) or strobe command(1)
+    /// Address byte[6]: Write to (0) or read from (1) control register
     address &= 0x3f;
     uint8_t pData[2] = {address, data};
 
@@ -41,8 +41,7 @@ void a7105SpiRegWrite16(uint8_t address, uint8_t data) {
 
 uint8_t a7105SpiRegRead(uint8_t reg) {
     uint8_t data[1] = {0};
-
-    // Don't forget register read bit (bit 6 -> 0x40)
+    /// Don't forget register read bit (bit 6 -> 0x40)
     reg &= 0x3f;
     reg |= 0x40;
 
