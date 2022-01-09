@@ -1,4 +1,4 @@
-#include "inc/a7105_spi.h"
+#include "a7105_spi.h"
 
 struct A7105_SPI_t conf;
 
