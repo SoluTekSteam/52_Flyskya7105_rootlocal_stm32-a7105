@@ -17,34 +17,14 @@ extern "C" {
 #define A7105_TOGGLE_BIT(byte, bit) ((byte) ^= ((1) << (bit)))
 #define A7105_TEST_BIT(byte, bit) (((byte) >> (bit)) & (1))    //returns 1 or 0
 
-/**
- * TX/RX state
- */
+/// TX/RX state
 enum TXRX_State {
     TXRX_OFF,
     TX_EN,
     RX_EN,
 };
 
-
-/**
- * A7105 states for strobe
- */
-enum A7105_Strobe {
-    A7105_STROBE_SLEEP = 0x80,
-    A7105_STROBE_IDLE = 0x90,
-    A7105_STROBE_STANDBY = 0xA0,
-    A7105_STROBE_PLL = 0xB0,
-    A7105_STROBE_RX = 0xC0,
-    A7105_STROBE_TX = 0xD0,
-    A7105_STROBE_RST_WRPTR = 0xE0,
-    A7105_STROBE_RST_RDPTR = 0xF0,
-};
-
-
-/**
- * Register addresses
- */
+/// Register addresses
 enum {
     A7105_00_MODE = 0x00,
     A7105_01_MODE_CONTROL = 0x01,
@@ -109,8 +89,9 @@ enum A7105_MASK {
 
 /**
  * Resets the A7105, putting it into standby mode.
+ * @todo add return description
  */
-void A7105Reset(void);
+uint8_t A7105Reset(void);
 
 /**
  * @brief Perform 3 calibrations as in chapter 15 of datasheet.
@@ -129,32 +110,7 @@ uint8_t A7105Calib(void);
 void A7105Init(void);
 
 /**
-* Writes a value to the given register
-*
-* @param regAddr Address of the register to write to
-* @param value Value to write into the register
-* @return Value returned from slave when writing the register
-*/
-uint8_t writeRegister(uint8_t regAddr, uint8_t value);
-
-/**
-* @brief Reads a value from the given register
-*
-* @param regAddr Address of the register to read
-* @return The value of the register
-*/
-uint8_t readRegister(uint8_t regAddr);
-
-/**
- * @brief Sends a strobe command to the A7105
- *
- * @param state Strobe command state
- */
-uint8_t strobe(enum A7105_Strobe state);
-
-/**
  * @brief Send a packet of data to the A7105
- *
  * @param data Byte array to send
  * @param len Length of the byte array
  * @param channel Channel to transmit data on
@@ -163,7 +119,6 @@ void writeData(uint8_t *data, size_t len, uint8_t channel);
 
 /**
  * @brief Read a packet of date from the A7105
- *
  * @param buffer Byte array to hold the incoming data
  * @param len Length of the buffer, number of bytes to read in
  */
@@ -171,7 +126,6 @@ void readData(uint8_t *buffer, size_t len);
 
 /**
  * @brief Set the A7105's ID
- *
  * @param id 32-bit identifier
  */
 void setId(uint32_t id);
@@ -193,10 +147,9 @@ void setPower(uint8_t PAC_reg, uint8_t TBG_reg);
 
 /**
  * @brief Sets the TxRx mode
- *
  * @aparam mode TxRx mode
  */
-void setTxRxMode(enum TXRX_State mode);
+void A7105SetTxRxMode(enum TXRX_State mode);
 
 #ifdef __cplusplus
 }

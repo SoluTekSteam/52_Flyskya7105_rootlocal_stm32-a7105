@@ -21,13 +21,13 @@ void setA7105_GIO2(GPIO_TypeDef *GIO2_PORT, uint16_t GIO2_PIN) {
     conf.GIO2_PIN = GIO2_PIN;
 }
 
-void a7105SpiRegWrite8(uint8_t data) {
+void a7105SpiStrobe(enum A7105_Strobe data) {
     HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
-    HAL_SPI_Transmit(conf.spi, &data, 1, A7105_SPI_TIMEOUT);
+    HAL_SPI_Transmit(conf.spi, (uint8_t*) data, 1, A7105_SPI_TIMEOUT);
     HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
 }
 
-void a7105SpiRegWrite16(uint8_t address, uint8_t data) {
+void a7105SpiRegWrite(uint8_t address, uint8_t data) {
 
     /// Address byte[7]: Control registers (0) or strobe command(1)
     /// Address byte[6]: Write to (0) or read from (1) control register
