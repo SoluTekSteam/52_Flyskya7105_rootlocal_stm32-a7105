@@ -25,7 +25,7 @@ typedef enum A7105_Strobe {
 } A7105_Strobe;
 
 /// Register addresses
-enum {
+typedef enum A7105_Register_address {
     A7105_00_MODE = 0x00,
     A7105_01_MODE_CONTROL = 0x01,
     A7105_02_CALC = 0x02,
@@ -51,10 +51,10 @@ enum {
     A7105_16_DELAY_I = 0x16,
     A7105_17_DELAY_II = 0x17,
     A7105_18_RX = 0x18,
-    A7105_19_RX_GAIN_I = 0x19,
-    A7105_1A_RX_GAIN_II = 0x1A,
-    A7105_1B_RX_GAIN_III = 0x1B,
-    A7105_1C_RX_GAIN_IV = 0x1C,
+    A7105_19_RX_GAIN_I = 0x19,          /// RX Gain Register I
+    A7105_1A_RX_GAIN_II = 0x1A,         /// RX Gain Register II
+    A7105_1B_RX_GAIN_III = 0x1B,        /// RX Gain Register III
+    A7105_1C_RX_GAIN_IV = 0x1C,         /// RX Gain Register IV
     A7105_1D_RSSI_THOLD = 0x1D,
     A7105_1E_ADC = 0x1E,
     A7105_1F_CODE_I = 0x1F,
@@ -77,10 +77,10 @@ enum {
     A7105_30_IFAT = 0x30,
     A7105_31_RSCALE = 0x31,
     A7105_32_FILTER_TEST = 0x32,
-};
+} A7105_Register_address;
 
 /// A7105 Config struct
-struct A7105_SPI_t {
+typedef struct A7105_SPI_t {
     SPI_HandleTypeDef *spi;
     GPIO_TypeDef *SCS_PORT;
     uint16_t SCS_PIN;
@@ -88,24 +88,47 @@ struct A7105_SPI_t {
     uint16_t GIO1_PIN;
     GPIO_TypeDef *GIO2_PORT;
     uint16_t GIO2_PIN;
-};
+} A7105_SPI_t;
+
+/// Power amp is ~+16dBm so:
+typedef enum TxPower {
+    TXPOWER_100uW,  // -23dBm == PAC=0 TBG=0
+    TXPOWER_300uW,  // -20dBm == PAC=0 TBG=1
+    TXPOWER_1mW,    // -16dBm == PAC=0 TBG=2
+    TXPOWER_3mW,    // -11dBm == PAC=0 TBG=4
+    TXPOWER_10mW,   // -6dBm  == PAC=1 TBG=5
+    TXPOWER_30mW,   // 0dBm   == PAC=2 TBG=7
+    TXPOWER_100mW,  // 1dBm   == PAC=3 TBG=7
+    TXPOWER_150mW,  // 1dBm   == PAC=3 TBG=7
+    TXPOWER_LAST,
+} TxPower;
+
+/**
+ * @brief Low Level SCS
+ */
+extern void SCS_LO();
+
+/**
+ * @brief High Level SCS
+ */
+extern void SCS_HI();
 
 /**
  * @brief Set Spi Interface
  * @param spi SPI handle Structure definition
  */
-void setA7105Spi(SPI_HandleTypeDef *spi);
+extern void setA7105Spi(SPI_HandleTypeDef *spi);
 
 /**
  * @brief Chip Select port
  * @param SCS_PORT General Purpose I/O
  * @param SCS_PIN Pin I/O
  */
-void setA7105_SCS(GPIO_TypeDef *SCS_PORT, uint16_t SCS_PIN);
+extern void setA7105_SCS(GPIO_TypeDef *SCS_PORT, uint16_t SCS_PIN);
 
-void setA7105_GIO1(GPIO_TypeDef *GIO1_PORT, uint16_t GIO1_PIN);
+extern void setA7105_GIO1(GPIO_TypeDef *GIO1_PORT, uint16_t GIO1_PIN);
 
-void setA7105_GIO2(GPIO_TypeDef *GIO2_PORT, uint16_t GIO2_PIN);
+extern void setA7105_GIO2(GPIO_TypeDef *GIO2_PORT, uint16_t GIO2_PIN);
 
 /**
 * @bref Writes a value to the given register
@@ -113,29 +136,29 @@ void setA7105_GIO2(GPIO_TypeDef *GIO2_PORT, uint16_t GIO2_PIN);
 * @param data Value to write into the register
 * @return Value returned from slave when writing the register
 */
-void a7105SpiRegWrite(uint8_t address, uint8_t data);
+extern void a7105SpiRegWrite(uint8_t address, uint8_t data);
 
 /**
 * @brief Sends a strobe command to the A7105
 * @param Strobe command state
 * @return Value returned from slave when writing the register
 */
-void a7105SpiStrobe(enum A7105_Strobe data);
+extern void a7105SpiStrobe(enum A7105_Strobe data);
 
 /**
 * @brief Reads a value from the given register
 * @param reg Address of the register to read
 * @return The value of the register
 */
-uint8_t a7105SpiRegRead(uint8_t reg);
+extern uint8_t a7105SpiRegRead(uint8_t reg);
 
-void a7105SpiSetId(uint32_t id);
+extern void a7105SpiSetId(uint32_t id);
 
-uint32_t a7105SpiGetId(void);
+extern uint32_t a7105SpiGetId(void);
 
-void A7105SpiWriteData(uint8_t *data, size_t len, uint8_t channel);
+extern void A7105SpiWriteData(uint8_t *data, size_t len, uint8_t channel);
 
-void A7105SpiReadData(uint8_t *buffer, size_t len);
+extern void A7105SpiReadData(uint8_t *buffer, size_t len);
 
 #ifdef __cplusplus
 extern "C" {

@@ -18,25 +18,25 @@ extern "C" {
 #define A7105_TEST_BIT(byte, bit) (((byte) >> (bit)) & (1))    //returns 1 or 0
 
 /// TX/RX state
-enum TXRX_State {
+typedef enum TXRX_State {
     TXRX_OFF,
     TX_EN,
     RX_EN,
-};
+} TXRX_State;
 
 #define A7105_0F_CHANNEL A7105_0F_PLL_I
 
-enum A7105_MASK {
+typedef enum A7105_MASK {
     A7105_MASK_FBCF = 1 << 4,
     A7105_MASK_VBCF = 1 << 3,
-};
+} A7105_MASK;
 
 
 /**
  * Resets the A7105, putting it into standby mode.
  * @todo add return description
  */
-uint8_t A7105Reset(void);
+extern uint8_t A7105Reset(void);
 
 /**
  * @brief Perform 3 calibrations as in chapter 15 of datasheet.
@@ -50,9 +50,9 @@ uint8_t A7105Reset(void);
  *    - 0x10  if IF filter bank calibration took more than 1000us
  *    - 0x20  if IF filter bank calibration was not successful
  */
-uint8_t A7105Calib(void);
+extern uint8_t A7105Calib(void);
 
-void A7105Init(void);
+extern void A7105Init(void);
 
 /**
  * @brief Send a packet of data to the A7105
@@ -60,20 +60,20 @@ void A7105Init(void);
  * @param len Length of the byte array
  * @param channel Channel to transmit data on
  */
-void writeData(uint8_t *data, size_t len, uint8_t channel);
+extern void writeData(uint8_t *data, size_t len, uint8_t channel);
 
 /**
  * @brief Read a packet of date from the A7105
  * @param buffer Byte array to hold the incoming data
  * @param len Length of the buffer, number of bytes to read in
  */
-void readData(uint8_t *buffer, size_t len);
+extern void readData(uint8_t *buffer, size_t len);
 
 /**
  * @brief Set the A7105's ID
  * @param id 32-bit identifier
  */
-void setId(uint32_t id);
+extern void setId(uint32_t id);
 
 /**
  * @brief A7105 supports programmable TX power from –20dBm ~1dBm by TX test register (28h).
@@ -90,15 +90,23 @@ void setId(uint32_t id);
  * @param PAC_reg PAC[1:0] Register
  * @param TBG_reg TBG[2:0] Register
  */
-void A7105SetPower(uint8_t PAC_reg, uint8_t TBG_reg);
+extern void A7105SetPowerReg(uint8_t PAC_reg, uint8_t TBG_reg);
+
+/**
+ * @brief A7105 supports programmable TX power from –20dBm ~1dBm by TX test register (28h).
+ *
+ * @see setPower(uint8_t PAC_reg, uint8_t TBG_reg)
+ * @param power TxPower
+ */
+extern void A7105SetPower(TxPower power);
 
 /**
  * @brief Sets the TxRx mode
  * @aparam mode TxRx mode
  */
-void A7105SetTxRxMode(enum TXRX_State mode);
+extern void A7105SetTxRxMode(enum TXRX_State mode);
 
-void A7105SetChannel(uint8_t chnl);
+extern void A7105SetChannel(uint8_t chnl);
 
 #ifdef __cplusplus
 }

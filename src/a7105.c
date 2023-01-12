@@ -132,6 +132,52 @@ uint8_t A7105Calib(void) {
     return retVal;
 }
 
-void A7105SetPower(uint8_t PAC_reg, uint8_t TBG_reg) {
+void A7105SetPowerReg(uint8_t PAC_reg, uint8_t TBG_reg) {
     a7105SpiRegWrite(A7105_28_TX_TEST, (PAC_reg << 3) | TBG_reg);
+}
+
+void A7105SetPower(TxPower power) {
+    uint8_t PAC_reg, TBG_reg;
+
+    switch (power) {
+        case 0:
+            PAC_reg = 0;
+            TBG_reg = 0;
+            break;
+        case 1:
+            PAC_reg = 0;
+            TBG_reg = 1;
+            break;
+        case 2:
+            PAC_reg = 0;
+            TBG_reg = 2;
+            break;
+        case 3:
+            PAC_reg = 0;
+            TBG_reg = 4;
+            break;
+        case 4:
+            PAC_reg = 1;
+            TBG_reg = 5;
+            break;
+        case 5:
+            PAC_reg = 2;
+            TBG_reg = 7;
+            break;
+        case 6:
+        case 7:
+            PAC_reg = 3;
+            TBG_reg = 7;
+            break;
+        default:
+            PAC_reg = 0;
+            TBG_reg = 0;
+            break;
+    }
+
+    A7105SetPowerReg(PAC_reg, TBG_reg);
+}
+
+void setId(uint32_t id) {
+    a7105SpiSetId(id);
 }

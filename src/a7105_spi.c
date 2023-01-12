@@ -11,6 +11,14 @@ void setA7105_SCS(GPIO_TypeDef *SCS_PORT, uint16_t SCS_PIN) {
     conf.SCS_PIN = SCS_PIN;
 }
 
+void SCS_LO() {
+    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+}
+
+void SCS_HI() {
+    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
+}
+
 void setA7105_GIO1(GPIO_TypeDef *GIO1_PORT, uint16_t GIO1_PIN) {
     conf.GIO1_PORT = GIO1_PORT;
     conf.GIO1_PIN = GIO1_PIN;
@@ -22,46 +30,40 @@ void setA7105_GIO2(GPIO_TypeDef *GIO2_PORT, uint16_t GIO2_PIN) {
 }
 
 void a7105SpiStrobe(A7105_Strobe data) {
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+    SCS_LO();
     HAL_SPI_Transmit(conf.spi, (uint8_t *) &data, 1, A7105_SPI_TIMEOUT);
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
+    SCS_HI();
 }
 
 void a7105SpiSetId(uint32_t id) {
     uint8_t data[4];
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
-
-    uint8_t reg = A7105_06_ID_DATA;
-    HAL_SPI_Transmit(conf.spi, &reg, 1, A7105_SPI_TIMEOUT);
-
     data[0] = (id >> 24) & 0xFF;
     data[1] = (id >> 16) & 0xFF;
     data[2] = (id >> 8) & 0xFF;
     data[3] = (id >> 0) & 0xFF;
 
+    SCS_LO();
+    HAL_SPI_Transmit(conf.spi, (uint8_t *) A7105_06_ID_DATA, 1, A7105_SPI_TIMEOUT);
     HAL_SPI_Transmit(conf.spi, data, 4, A7105_SPI_TIMEOUT);
-
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
+    SCS_HI();
 }
 
 uint32_t a7105SpiGetId(void) {
     uint32_t ID;
     uint8_t idBytes[4];
 
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+    SCS_LO();
     /// We could read this straight into ID, but the result would depend on
     /// the endiness of the architecture.
 
     uint8_t reg = A7105_06_ID_DATA;
     HAL_SPI_Transmit(conf.spi, &reg, 1, A7105_SPI_TIMEOUT);
     HAL_SPI_Receive(conf.spi, idBytes, 4, A7105_SPI_TIMEOUT);
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
-
+    SCS_HI();
     ID = (uint32_t) idBytes[0] << 24;
     ID |= (uint32_t) idBytes[1] << 16;
     ID |= (uint32_t) idBytes[2] << 8;
     ID |= (uint32_t) idBytes[3] << 0;
-
 
     return (ID);
 }
@@ -73,9 +75,9 @@ void a7105SpiRegWrite(uint8_t address, uint8_t data) {
     address &= 0x3f;
     uint8_t pData[2] = {address, data};
 
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+    SCS_LO();
     HAL_SPI_Transmit(conf.spi, pData, 2, A7105_SPI_TIMEOUT);
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
+    SCS_HI();
 }
 
 uint8_t a7105SpiRegRead(uint8_t reg) {
@@ -84,16 +86,15 @@ uint8_t a7105SpiRegRead(uint8_t reg) {
     reg &= 0x3f;
     reg |= 0x40;
 
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+    SCS_LO();
     HAL_SPI_Transmit(conf.spi, &reg, 1, A7105_SPI_TIMEOUT);
     HAL_SPI_Receive(conf.spi, data, 1, A7105_SPI_TIMEOUT);
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
-
+    SCS_HI();
     return data[0];
 }
 
 void A7105SpiWriteData(uint8_t *data, size_t len, uint8_t channel) {
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_RESET);
+    SCS_LO();
 
     uint8_t reg = A7105_STROBE_RST_WRPTR;
     HAL_SPI_Transmit(conf.spi, &reg, 1, A7105_SPI_TIMEOUT);
@@ -102,8 +103,8 @@ void A7105SpiWriteData(uint8_t *data, size_t len, uint8_t channel) {
 
     /// transmit data
     HAL_SPI_Transmit(conf.spi, data, len, A7105_SPI_TIMEOUT);
+    SCS_HI();
 
-    HAL_GPIO_WritePin(conf.SCS_PORT, conf.SCS_PIN, GPIO_PIN_SET);
     a7105SpiRegWrite(A7105_0F_PLL_I, channel);
     a7105SpiStrobe(A7105_STROBE_TX);
 }
